@@ -2,15 +2,15 @@ version: "3"
 services:
   web-note:
     build: .
-    container_name: web-note
     restart: always
-    ports:
-     - "80:80"
+    expose:
+      - 80  # Expose port for Coolify reverse proxy
     volumes:
-     - ./data:/var/www/html/_tmp
-    # environment:
-    #  FILE_LIMIT: 100000 # the number of files limit (default: 100000)
-    #  SINGLE_FILE_SIZE_LIMIT: 102400 # single file size limit, unit: byte (default: 102400)
+      - web-note-data:/var/www/html/_tmp  # Persistent storage for notes
+    environment:
+      FILE_LIMIT: 100000 # Maximum number of files
+      SINGLE_FILE_SIZE_LIMIT: 102400 # Max file size in bytes (100KB)
 
 volumes:
-  web-note:
+  web-note-data:
+    driver: local  # Persistent volume managed by Docker
