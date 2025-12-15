@@ -134,7 +134,7 @@ body {
   height: auto;
   vertical-align: middle;
   margin: 0.5rem;
-  max-width: 100%; /* 确保图片不会超出容器 */
+  max-width: 100%; /* Ensure images don't exceed container */
 }
 
 #markdown-content p {
@@ -156,27 +156,27 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     justify-content: center;
-    max-width: 80%;  /* 限制最大宽度 */
+    max-width: 80%;  /* Limit maximum width */
     margin-left: auto;
     margin-right: auto;
   }
 
   #markdown-content p:has(img) img {
-    width: 100%; /* 这里的宽度会被内联样式覆盖 */
+    width: 100%; /* Width here will be overridden by inline styles */
     height: auto;
-    object-fit: contain;  /* 改为 contain 以保持原始比例 */
+    object-fit: contain;  /* Change to contain to maintain original aspect ratio */
   }
 
-  /* 处理单张图片的情况 */
+  /* Handle single image case */
   #markdown-content p:has(img:only-child) {
     display: block;
     text-align: center;
-    max-width: none;  /* 移除最大宽度限制 */
+    max-width: none;  /* Remove maximum width limit */
   }
 
   #markdown-content p:has(img:only-child) img {
-    max-width: 70%; /* 允许单张图片使用指定的宽度 */
-    width: auto; /* 这里的宽度会被内联样式覆盖 */
+    max-width: 70%; /* Allow single image to use specified width */
+    width: auto; /* Width here will be overridden by inline styles */
     height: auto;
   }
 }
@@ -211,8 +211,8 @@ body {
 }
 
 .sidebar h3 {
-  padding: 8px 32px;  /* 将左内边距改为32px，与列表项对齐 */
-  margin: 0;  /* 移除默认的外边距 */
+  padding: 8px 32px;  /* Change left padding to 32px to align with list items */
+  margin: 0;  /* Remove default margin */
   text-decoration: none;
   font-size: 18px;
   color: #818181;
@@ -220,19 +220,19 @@ body {
 }
 
 .sidebar.open {
-  left: 0; /* 当添加 'open' 类时显示侧边栏 */
+  left: 0; /* Show sidebar when 'open' class is added */
 }
 
 .container {
   transition: margin-left .3s;
 }
 
-/* 当侧边栏打开时，调整主容器的位置 */
+/* Adjust main container position when sidebar is open */
 .container.sidebar-open {
   margin-left: 250px;
 }
 
-/* 在小屏幕上的特殊处理 */
+/* Special handling for small screens */
 @media screen and (max-width: 768px) {
     .sidebar {
         width: 100%;
@@ -248,7 +248,7 @@ body {
     }
 }
 
-/* 添加一个关闭按钮 */
+/* Add a close button */
 .close-btn {
   position: absolute;
   top: 15px;
@@ -399,14 +399,14 @@ body {
   }
 
   #history-list li a {
-    padding: 12px 32px; /* 增加点击区域 */
-    padding-right: 50px; /* 为删除按钮留出更多空间 */
+    padding: 12px 32px; /* Increase clickable area */
+    padding-right: 50px; /* Leave more space for delete button */
   }
 
   .delete-btn {
       right: 15px;
-      padding: 12px 15px; /* 增加点击区域 */
-      font-size: 20px; /* 增大字体大小，更容易点击 */
+      padding: 12px 15px; /* Increase clickable area */
+      font-size: 20px; /* Increase font size for easier clicking */
   }
 }
 
