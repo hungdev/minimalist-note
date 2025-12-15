@@ -1,16 +1,21 @@
-version: "3"
+version: '3'
 services:
+  # Initialize notes directory on host
+  init-notes:
+    image: alpine:latest
+    command: sh -c "mkdir -p /notes-data && chmod 755 /notes-data && echo 'Notes directory initialized'"
+    volumes:
+      - /home/ubuntu/notes-data:/notes-data
+
   web-note:
     build: .
     restart: always
+    depends_on:
+      - init-notes
     expose:
-      - 80  # Expose port for Coolify reverse proxy
+      - 80 # Expose port for Coolify reverse proxy
     volumes:
-      - web-note-data:/var/www/html/_tmp  # Persistent storage for notes
+      - /home/ubuntu/notes-data:/var/www/html/_tmp # Persistent storage for notes (mounted to host)
     environment:
       FILE_LIMIT: 100000 # Maximum number of files
       SINGLE_FILE_SIZE_LIMIT: 102400 # Max file size in bytes (100KB)
-
-volumes:
-  web-note-data:
-    driver: local  # Persistent volume managed by Docker
