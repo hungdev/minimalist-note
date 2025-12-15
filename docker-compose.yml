@@ -10,6 +10,7 @@ services:
     environment:
       FILE_LIMIT: 100000 # Maximum number of files
       SINGLE_FILE_SIZE_LIMIT: 102400 # Max file size in bytes (100KB)
+      ADMIN_MASTER_PASSWORD: ${ADMIN_MASTER_PASSWORD:-changeme} # Admin password for unlocking any note
 
 volumes:
   web-note-data:

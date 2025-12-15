@@ -20,7 +20,14 @@ function uploadContent() {
             // Try again after 1 second.
             setTimeout(uploadContent, 1000);
         }
-        request.send('text=' + encodeURIComponent(temp));
+
+        // Include password if note is locked
+        const password = typeof getStoredPassword === 'function' ? getStoredPassword() : null;
+        let params = 'text=' + encodeURIComponent(temp);
+        if (password) {
+            params += '&password=' + encodeURIComponent(password);
+        }
+        request.send(params);
 
         // Make the content available to print.
         printable.removeChild(printable.firstChild);

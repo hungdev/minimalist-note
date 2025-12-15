@@ -28,7 +28,55 @@ if (!isset($_GET['note']) || !preg_match('/^[a-zA-Z0-9_-]+$/', $_GET['note']) ||
 
 $path = $save_path . '/' . $_GET['note'];
 
+// Handle lock operations (MUST come before text POST handler)
+if (isset($_POST['action'])) {
+    $note = $_GET['note'];
+    $lock_path = $save_path . '/' . $note . '.lock';
+
+    if ($_POST['action'] === 'set_lock') {
+        // Set password lock
+        $password_hash = $_POST['password_hash'];
+        if (strlen($password_hash) !== 64) { // SHA-256 is exactly 64 hex chars
+            header('HTTP/1.0 400 Bad Request');
+            die('Invalid password hash');
+        }
+        file_put_contents($lock_path, $password_hash);
+        echo json_encode(['success' => true]);
+        die;
+    }
+
+    if ($_POST['action'] === 'remove_lock') {
+        // Remove password lock (only if note is unlocked)
+        if (file_exists($lock_path)) {
+            unlink($lock_path);
+        }
+        echo json_encode(['success' => true]);
+        die;
+    }
+
+    if ($_POST['action'] === 'validate_password') {
+        // Validate password for unlocking
+        $password = $_POST['password'];
+        if (strlen($password) > 128) { // Prevent excessively long passwords
+            echo json_encode(['valid' => false]);
+            die;
+        }
+        $is_valid = validatePassword($password, $note, $save_path);
+        echo json_encode(['valid' => $is_valid]);
+        die;
+    }
+}
+
 if (isset($_POST['text'])) {
+
+    // Validate password if note is locked
+    if (isNoteLocked($_GET['note'], $save_path)) {
+        $password = isset($_POST['password']) ? $_POST['password'] : '';
+        if (!validatePassword($password, $_GET['note'], $save_path)) {
+            header('HTTP/1.0 403 Forbidden');
+            die('Invalid password');
+        }
+    }
 
     // file count limit
     if ($fileCount >= $file_limit) {
@@ -36,7 +84,7 @@ if (isset($_POST['text'])) {
         header('HTTP/1.0 403 Forbidden');
         die;
     }
-    
+
     // single file size limit
     if (strlen($_POST['text']) > $single_file_size_limit) {
         error_log("File size limit reached $single_file_size_limit");
@@ -79,6 +127,33 @@ function _generateExcerpt($text, $length = 150) {
     }
     return $excerpt;
 }
+
+function isNoteLocked($note, $save_path) {
+    return file_exists($save_path . '/' . $note . '.lock');
+}
+
+function getPasswordHash($note, $save_path) {
+    $lock_file = $save_path . '/' . $note . '.lock';
+    return file_exists($lock_file) ? trim(file_get_contents($lock_file)) : null;
+}
+
+function validatePassword($password, $note, $save_path) {
+    $stored_hash = getPasswordHash($note, $save_path);
+    if (!$stored_hash) return true; // No lock
+
+    $password_hash = hash('sha256', $password);
+
+    // Check user password (use hash_equals for timing attack protection)
+    if (hash_equals($password_hash, $stored_hash)) return true;
+
+    // Check admin master password
+    $admin_password = getenv('ADMIN_MASTER_PASSWORD');
+    if ($admin_password && hash_equals(hash('sha256', $password), hash('sha256', $admin_password))) {
+        return true;
+    }
+
+    return false;
+}
 ?>
 
 <!DOCTYPE html>
@@ -112,10 +187,14 @@ function _generateExcerpt($text, $length = 150) {
             <div id="qrcode"></div>
         </div>
         <textarea class="mousetrap" id="content" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"><?php
-            if (is_file($path)) {
+            $is_locked = isNoteLocked($_GET['note'], $save_path);
+            if (!$is_locked && is_file($path)) {
                 print htmlspecialchars(file_get_contents($path), ENT_QUOTES, 'UTF-8');
             }
         ?></textarea>
+        <script>
+            var isLocked = <?php echo $is_locked ? 'true' : 'false'; ?>;
+        </script>
         <button id="clippy" class="btn">
             <img src="/clippy.svg" alt="Copy to clipboard" style="width: 12px; height: 16px;">
         </button>
@@ -125,13 +204,15 @@ function _generateExcerpt($text, $length = 150) {
             <!-- <?php echo 'web-note' . $_SERVER['REQUEST_URI']; ?> -->
             💡 new &nbsp;|&nbsp;
             </a>
-            <a href="#" id="renderMarkdown">note/<?php echo $_GET['note']; ?>&nbsp;<label id="renderStatus" style="cursor: pointer">🔓</label></a>
+            <a href="#" id="lockIconLink">note/<?php echo $_GET['note']; ?>&nbsp;<label id="lockIcon" style="cursor: pointer"><?php echo isNoteLocked($_GET['note'], $save_path) ? '🔒' : '🔓'; ?></label></a>
             <a href="#" id="showQRCode" class="copyBtn">&nbsp; | &nbsp;🔗 share</a>
             <a href="#" id="showHistory" class="showHistory">&nbsp; | &nbsp;📜 history</a>
         </div>
     </div>
     <pre id="printable"></pre>
     <div id="qrcode"></div>
+    <!-- lock -->
+    <script src="<?php print $base_url; ?>/lock.js"></script>
     <!-- markdown render -->
     <script src="<?php print $base_url; ?>/markdown.js"></script>
     <!-- copy -->

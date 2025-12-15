@@ -425,3 +425,105 @@ pre code:hover {
     background-color: rgba(0,0,0,0.02);
 }
 
+/* Password Lock Modals */
+.password-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    min-width: 300px;
+}
+
+.password-modal h3 {
+    margin-top: 0;
+}
+
+.password-modal input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.password-modal button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.password-modal .btn-primary {
+    background-color: #5281bf;
+    color: white;
+}
+
+.password-modal .btn-primary:hover {
+    background-color: #4170ae;
+}
+
+.password-modal .btn-secondary {
+    background-color: #ddd;
+}
+
+.password-modal .btn-secondary:hover {
+    background-color: #ccc;
+}
+
+.password-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+}
+
+.locked-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(235, 238, 241, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.locked-message {
+    text-align: center;
+    color: #666;
+}
+
+/* Dark mode support for password modals */
+@media (prefers-color-scheme: dark) {
+    .password-modal {
+        background-color: #22252a;
+        color: #f8f8f2;
+    }
+
+    .password-modal input {
+        background-color: #2d333b;
+        color: #f8f8f2;
+        border: 1px solid #464c55;
+    }
+
+    .locked-overlay {
+        background-color: rgba(26, 28, 32, 0.95);
+    }
+
+    .locked-message {
+        color: #aaa;
+    }
+}
+
