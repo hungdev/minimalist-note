@@ -1,5 +1,7 @@
 FROM php:7.4-apache
 
+EXPOSE 80
+
 # Set PHP configuration to production
 RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
 

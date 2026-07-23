@@ -1,21 +1,22 @@
 version: '3'
 services:
-  # Initialize notes directory on host
-  init-notes:
-    image: alpine:latest
-    command: sh -c "mkdir -p /notes-data && chmod 755 /notes-data && echo 'Notes directory initialized'"
-    volumes:
-      - /home/ubuntu/notes-data:/notes-data
-
   web-note:
     build: .
-    restart: always
-    depends_on:
-      - init-notes
+    restart: unless-stopped
     expose:
-      - 80 # Expose port for Coolify reverse proxy
+      - 80
     volumes:
-      - /home/ubuntu/notes-data:/var/www/html/_tmp # Persistent storage for notes (mounted to host)
+      - notes-data:/var/www/html/_tmp
     environment:
-      FILE_LIMIT: 100000 # Maximum number of files
-      SINGLE_FILE_SIZE_LIMIT: 102400 # Max file size in bytes (100KB)
+      - SERVICE_FQDN_WEB_NOTE_80
+      - FILE_LIMIT=100000
+      - SINGLE_FILE_SIZE_LIMIT=102400
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost/ > /dev/null 2>&1 || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  notes-data:
