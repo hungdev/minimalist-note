@@ -4,6 +4,9 @@ var saveStatus = document.getElementById("saveStatus");
 var toolbar = document.getElementById("toolbar");
 var settingsPanel = document.getElementById("settingsPanel");
 var settingsButton = document.getElementById("showSettings");
+var caretMirror = document.getElementById("caretMirror");
+var caretMarker = document.getElementById("caretMarker");
+var editorCaret = document.getElementById("editorCaret");
 var newNoteButton = document.getElementById("newNote");
 var newNoteDialog = document.getElementById("newNoteDialog");
 var cancelNewNoteButton = document.getElementById("cancelNewNote");
@@ -79,6 +82,31 @@ function scheduleSave() {
 function resizeTextarea() {
     textarea.style.height = "auto";
     textarea.style.height = Math.max(textarea.scrollHeight, textarea.parentElement.clientHeight) + "px";
+}
+
+function updateCustomCaret() {
+    var hasCaret = document.activeElement === textarea &&
+        textarea.selectionStart === textarea.selectionEnd;
+
+    if (!hasCaret) {
+        editorCaret.classList.remove("is-visible");
+        return;
+    }
+
+    var valueBeforeCaret = textarea.value.slice(0, textarea.selectionStart);
+    caretMirror.replaceChildren(
+        document.createTextNode(valueBeforeCaret),
+        caretMarker
+    );
+
+    var mirrorRect = caretMirror.getBoundingClientRect();
+    var markerRect = caretMarker.getBoundingClientRect();
+    editorCaret.style.left = (markerRect.left - mirrorRect.left) + "px";
+    editorCaret.style.top = (markerRect.top - mirrorRect.top) + "px";
+
+    editorCaret.classList.remove("is-visible");
+    void editorCaret.offsetWidth;
+    editorCaret.classList.add("is-visible");
 }
 
 function updateEditorLayout(lineWidth) {
@@ -160,6 +188,7 @@ function applySettings() {
     });
     updateEditorLayout(lineWidth);
     resizeTextarea();
+    updateCustomCaret();
 }
 
 function saveSettings(partial) {
@@ -175,13 +204,23 @@ function saveSettings(partial) {
 
 textarea.addEventListener("input", function() {
     resizeTextarea();
+    updateCustomCaret();
     scheduleSave();
     showToolbar();
     dimToolbarLater();
 });
 
 textarea.addEventListener("focus", function() {
+    updateCustomCaret();
     dimToolbarLater();
+});
+
+textarea.addEventListener("blur", updateCustomCaret);
+textarea.addEventListener("click", updateCustomCaret);
+textarea.addEventListener("keyup", updateCustomCaret);
+textarea.addEventListener("select", updateCustomCaret);
+document.addEventListener("selectionchange", function() {
+    if (document.activeElement === textarea) updateCustomCaret();
 });
 
 document.addEventListener("mousemove", function(event) {

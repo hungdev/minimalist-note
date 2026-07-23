@@ -89,7 +89,7 @@ function _generateExcerpt($text, $length = 150) {
     <meta name="theme-color" content="#232136">
     <title><?php print htmlspecialchars($_GET['note'], ENT_QUOTES, 'UTF-8'); ?> · write</title>
     <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="stylesheet" href="<?php print $base_url; ?>/styles.css?v=write-fork-7">
+    <link rel="stylesheet" href="<?php print $base_url; ?>/styles.css?v=write-fork-9">
     <meta name="description" content="📔 <?php print htmlspecialchars(generateExcerptByPath($path), ENT_QUOTES, 'UTF-8'); ?>">
     <script src="/js/qrcode.min.js"></script>
     <script src="/js/clipboard.min.js"></script>
@@ -147,6 +147,8 @@ function _generateExcerpt($text, $length = 150) {
         <section class="body">
             <div class="editor-pane">
                 <div class="editor-shell">
+                    <div id="caretMirror" class="caret-mirror" aria-hidden="true"><span id="caretMarker">&#8203;</span></div>
+                    <span id="editorCaret" class="editor-caret" aria-hidden="true"></span>
                     <textarea class="mousetrap" id="content" aria-label="Note content" placeholder="Start writing…" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"><?php
                         if (is_file($path)) {
                             print htmlspecialchars(file_get_contents($path), ENT_QUOTES, 'UTF-8');
@@ -199,9 +201,9 @@ function _generateExcerpt($text, $length = 150) {
         </div>
     </div>
     <pre id="printable"></pre>
-    <script src="<?php print $base_url; ?>/history.js?v=write-fork-7"></script>
-    <script src="<?php print $base_url; ?>/markdown.js?v=write-fork-7"></script>
-    <script src="<?php print $base_url; ?>/copy.js?v=write-fork-7"></script>
-    <script src="<?php print $base_url; ?>/script.js?v=write-fork-7"></script>
+    <script src="<?php print $base_url; ?>/history.js?v=write-fork-9"></script>
+    <script src="<?php print $base_url; ?>/markdown.js?v=write-fork-9"></script>
+    <script src="<?php print $base_url; ?>/copy.js?v=write-fork-9"></script>
+    <script src="<?php print $base_url; ?>/script.js?v=write-fork-9"></script>
 </body>
 </html>
