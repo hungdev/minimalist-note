@@ -1,69 +1,72 @@
-// history.js
-
-const HISTORY_KEY = 'web_note_history';
+const HISTORY_KEY = "web_note_history";
 const MAX_HISTORY_ITEMS = 30;
 
 function addToHistory(note) {
-    let history = getHistory();
-    history = history.filter(item => item !== note);
-    history.unshift(note);
-    history = history.slice(0, MAX_HISTORY_ITEMS);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    let noteHistory = getHistory();
+    noteHistory = noteHistory.filter(item => item !== note);
+    noteHistory.unshift(note);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(noteHistory.slice(0, MAX_HISTORY_ITEMS)));
     updateSidebar();
 }
 
 function getHistory() {
-    return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    } catch (error) {
+        return [];
+    }
 }
 
 function updateSidebar() {
-    const history = getHistory();
-    const historyList = document.getElementById('history-list');
-    historyList.innerHTML = '';
-    
-    history.forEach((note, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <a href="/${note}">${note}</a>
-            <button class="delete-btn" data-index="${index}">×</button>
-        `;
-        historyList.appendChild(li);
-    });
+    const noteHistory = getHistory();
+    const historyList = document.getElementById("history-list");
+    const emptyState = document.getElementById("history-empty");
+    historyList.innerHTML = "";
+    emptyState.style.display = noteHistory.length ? "none" : "block";
 
-    // Add event listeners to delete buttons
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', deleteHistoryItem);
+    noteHistory.forEach(note => {
+        const li = document.createElement("li");
+        const link = document.createElement("a");
+        const removeButton = document.createElement("button");
+
+        link.href = "/" + encodeURIComponent(note);
+        link.textContent = note;
+        link.title = "Open " + note;
+
+        removeButton.className = "delete-btn";
+        removeButton.type = "button";
+        removeButton.setAttribute("aria-label", "Remove " + note + " from history");
+        removeButton.textContent = "×";
+        removeButton.addEventListener("click", function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            deleteHistoryItem(note);
+        });
+
+        li.append(link, removeButton);
+        historyList.appendChild(li);
     });
 }
 
-function deleteHistoryItem(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    const listItem = event.target.closest('li');
-    const index = Array.from(listItem.parentNode.children).indexOf(listItem);
-    let history = getHistory();
-    history.splice(index, 1);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+function deleteHistoryItem(note) {
+    const updated = getHistory().filter(item => item !== note);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
     updateSidebar();
 }
 
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const container = document.querySelector('.container');
-    const isMobile = window.innerWidth <= 768;
+function toggleSidebar(force) {
+    const sidebar = document.getElementById("sidebar");
+    const backdrop = document.getElementById("sidebarBackdrop");
+    const shouldOpen = typeof force === "boolean" ? force : !sidebar.classList.contains("open");
 
-    sidebar.classList.toggle('open');
-    
-    if (isMobile) {
-        if (sidebar.classList.contains('open')) {
-            sidebar.style.left = '0';
-            container.style.filter = 'blur(3px)';
-        } else {
-            sidebar.style.left = '-100%';
-            container.style.filter = 'none';
-        }
-    } else {
-        container.classList.toggle('sidebar-open');
-    }
+    sidebar.classList.toggle("open", shouldOpen);
+    backdrop.classList.toggle("is-open", shouldOpen);
+    sidebar.setAttribute("aria-hidden", String(!shouldOpen));
+    document.getElementById("showHistory").classList.toggle("is-selected", shouldOpen);
 }
+
+document.getElementById("sidebarBackdrop").addEventListener("click", function() {
+    toggleSidebar(false);
+});
+
+updateSidebar();

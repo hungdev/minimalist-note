@@ -12,6 +12,7 @@ RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/Allo
 # Import App
 COPY .htaccess index.php styles.css copy.js script.js markdown.js history.js favicon.ico notes.htaccess clippy.svg /var/www/html/
 COPY public/js /var/www/html/js/
+COPY public/fonts /var/www/html/fonts/
 
 # Set entrypoint for permissions
 COPY minimalist-web-notepad-entrypoint /usr/local/bin/

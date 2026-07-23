@@ -1,78 +1,94 @@
-// qrcode
-var isGenerate = false;
-var clipboardForContent = new ClipboardJS('.btn', {
-    text: function () {
-        return contentTextarea = document.getElementById("content").value;
+var qrGeneratedFor = "";
+
+var clipboardForContent = new ClipboardJS(".btn", {
+    text: function() {
+        return document.getElementById("content").value;
     }
 });
 
-clipboardForContent.on('success', function (e) {
-    showNotification("content copied");
-    e.clearSelection();
+clipboardForContent.on("success", function(event) {
+    showNotification("Note copied");
+    event.clearSelection();
 });
 
-var clipboard = new ClipboardJS('.copyBtn', {
-    text: function () {
-        return getUrl();
+var clipboard = new ClipboardJS(".copyBtn", {
+    text: getUrl
+});
+
+clipboard.on("success", function(event) {
+    showNotification("Link copied");
+    event.clearSelection();
+});
+
+clipboard.on("error", function() {
+    showNotification("Could not copy link");
+});
+
+document.getElementById("showQRCode").addEventListener("click", function(event) {
+    event.preventDefault();
+    var popup = document.getElementById("qrcodePopup");
+    var qrTarget = document.getElementById("qrcode");
+    var url = getUrl();
+
+    if (qrGeneratedFor !== url && typeof QRCode !== "undefined") {
+        qrTarget.innerHTML = "";
+        new QRCode(qrTarget, {
+            text: url,
+            width: 168,
+            height: 168,
+            colorDark: "#191724",
+            colorLight: "#ffffff"
+        });
+        qrGeneratedFor = url;
+    }
+
+    popup.classList.add("is-open");
+    popup.setAttribute("aria-hidden", "false");
+});
+
+document.addEventListener("click", function(event) {
+    if (!event.target.closest("#qrcodePopup") && !event.target.closest("#showQRCode")) {
+        closeQrPopup();
     }
 });
 
-clipboard.on('success', function (e) {
-    console.log('link copied');
-    showNotification("link copied");
-    e.clearSelection();
-});
-
-clipboard.on('error', function (e) {
-    console.error('link copied failed');
-    showNotification("link copied failed");
-});
-
-document.getElementById('showQRCode').addEventListener('click', function (e) {
-    e.preventDefault();
-});
-
-document.addEventListener('click', function (e) {
-    if (!e.target.closest('#qrcodePopup') && !e.target.closest('#showQRCode')) {
-        document.getElementById('qrcodePopup').style.display = 'none';
-    }
-});
-
-Mousetrap.bind('esc', function () {
-    document.getElementById('qrcodePopup').style.display = 'none';
-    // return false to prevent default browser behavior
-    return true;
-});
+function closeQrPopup() {
+    var popup = document.getElementById("qrcodePopup");
+    popup.classList.remove("is-open");
+    popup.setAttribute("aria-hidden", "true");
+}
 
 function showNotification(message) {
+    var existing = document.querySelector(".notify");
+    if (existing) existing.remove();
+
     var notify = document.createElement("div");
     notify.className = "notify";
+    notify.setAttribute("role", "status");
     notify.textContent = message;
     document.body.appendChild(notify);
-
-    setTimeout(function () {
-        document.body.removeChild(notify);
-    }, 1000);
+    window.setTimeout(function() {
+        notify.remove();
+    }, 1300);
 }
 
-function getUrl(url) {
-    var url = window.location.href;
-    if (document.getElementById("markdown-content").style.display !== "none") {
-        if (!url.includes('?marked')) {
-            url = url + '?marked';
-        }
+function getUrl() {
+    var url = new URL(window.location.href);
+    if (typeof previewOpen !== "undefined" && previewOpen) {
+        url.searchParams.set("marked", "");
+    } else {
+        url.searchParams.delete("marked");
     }
-    return url;
+    return url.toString();
 }
 
-Mousetrap.bind('mod+e', function () {
-    renderMarkdown();
-    // return false to prevent default browser behavior
+Mousetrap.bind("mod+l", function() {
+    document.getElementById("showQRCode").click();
     return false;
 });
 
-Mousetrap.bind('mod+l', function () {
-    document.getElementById("showQRCode").click();
-    // return false to prevent default browser behavior
-    return false;
+Mousetrap.bind("esc", function() {
+    closeQrPopup();
+    if (document.getElementById("sidebar").classList.contains("open")) toggleSidebar(false);
+    return true;
 });
