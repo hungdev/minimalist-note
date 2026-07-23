@@ -12,7 +12,7 @@ services:
       - FILE_LIMIT=100000
       - SINGLE_FILE_SIZE_LIMIT=102400
     healthcheck:
-      test: ['CMD-SHELL', 'wget -qO- http://localhost/ > /dev/null 2>&1 || exit 1']
+      test: ['CMD-SHELL', 'curl -f http://localhost/ > /dev/null 2>&1 || exit 1']
       interval: 30s
       timeout: 5s
       retries: 3
